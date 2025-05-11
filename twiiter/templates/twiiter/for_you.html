@@ -1,0 +1,122 @@
+{% extends 'twiiter/base.html' %}
+
+{% block title %}For You - Twiiter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Popular Tweets</h2>
+        
+        {% if popular_tweets %}
+            {% for tweet in popular_tweets %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <a href="{% url 'twiiter:tweet_detail' tweet.id %}" class="tweet-link text-decoration-none text-dark">
+                            <h5 class="card-title">
+                                <a href="{% url 'twiiter:profile' tweet.author.username %}">
+                                    {{ tweet.author.username }}
+                                </a>
+                            </h5>
+                            <p class="card-text">{{ tweet.content }}</p>
+                            {% if tweet.image_url %}
+                                <img src="{{ tweet.image_url }}" class="img-fluid rounded mb-3" alt="Tweet image">
+                            {% endif %}
+                            <small class="text-muted">{{ tweet.created_at }}</small>
+                        </a>
+
+                        <div class="tweet-actions mt-3">
+                            <a href="{% url 'twiiter:tweet_detail' tweet.id %}">
+                                <i class="far fa-comment"></i> {{ tweet.comments.count }}
+                            </a>
+                            <a href="{% url 'twiiter:like_toggle' tweet.id %}" class="like-button {% if tweet.id in user_liked_tweets %}liked{% endif %}">
+                                <i class="{% if tweet.id in user_liked_tweets %}fas{% else %}far{% endif %} fa-heart"></i>
+                                <span class="like-count">{{ tweet.likes.count }}</span>
+                            </a>
+                            {% if user == tweet.author %}
+                                <a href="{% url 'twiiter:edit_tweet' tweet.id %}">
+                                    <i class="far fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'twiiter:delete_tweet' tweet.id %}" class="text-danger">
+                                    <i class="far fa-trash-alt"></i> Delete
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No popular tweets yet.</p>
+        {% endif %}
+
+        {% if recommended_tweets %}
+            <h2 class="mt-4">Recommended For You</h2>
+
+            {% for tweet in recommended_tweets %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <a href="{% url 'twiiter:tweet_detail' tweet.id %}" class="tweet-link text-decoration-none text-dark">
+                            <h5 class="card-title">
+                                <a href="{% url 'twiiter:profile' tweet.author.username %}">
+                                    {{ tweet.author.username }}
+                                </a>
+                            </h5>
+                            <p class="card-text">{{ tweet.content }}</p>
+                            {% if tweet.image_url %}
+                                <img src="{{ tweet.image_url }}" class="img-fluid rounded mb-3" alt="Tweet image">
+                            {% endif %}
+                            <small class="text-muted">{{ tweet.created_at }}</small>
+                        </a>
+
+                        <div class="tweet-actions mt-3">
+                            <a href="{% url 'twiiter:tweet_detail' tweet.id %}">
+                                <i class="far fa-comment"></i> {{ tweet.comments.count }}
+                            </a>
+                            <a href="{% url 'twiiter:like_toggle' tweet.id %}" class="like-button {% if tweet.id in user_liked_tweets %}liked{% endif %}">
+                                <i class="{% if tweet.id in user_liked_tweets %}fas{% else %}far{% endif %} fa-heart"></i>
+                                <span class="like-count">{{ tweet.likes.count }}</span>
+                            </a>
+                            {% if user == tweet.author %}
+                                <a href="{% url 'twiiter:edit_tweet' tweet.id %}">
+                                    <i class="far fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'twiiter:delete_tweet' tweet.id %}" class="text-danger">
+                                    <i class="far fa-trash-alt"></i> Delete
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Your Favorite Tags</h4>
+            </div>
+            <div class="card-body">
+                {% if user.is_authenticated %}
+                    {% if user.favorite_tags.all %}
+                        <div class="list-group">
+                            {% for tag in user.favorite_tags.all %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'twiiter:hashtag' tag.hashtag.name %}">#{{ tag.hashtag.name }}</a>
+                                    <a href="{% url 'twiiter:remove_favorite_tag' tag.hashtag.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>You haven't added any favorite hashtags yet.</p>
+                        <a href="{% url 'twiiter:favorite_tags' user.username %}" class="btn btn-primary mt-2">Manage Favorite Tags</a>
+                    {% endif %}
+                {% else %}
+                    <p>Log in to manage your favorite hashtags and see personalized recommendations.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'twiiter/base.html' %}
+
+{% block title %}#{{ hashtag.name }} - Twiiter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2>#{{ hashtag.name }}</h2>
+                <p>{{ tweets.count }} tweets with this hashtag</p>
+            </div>
+        </div>
+        
+        {% if tweets %}
+            {% for tweet in tweets %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <a href="{% url 'twiiter:tweet_detail' tweet.id %}" class="tweet-link text-decoration-none text-dark">
+                            <h5 class="card-title">
+                                <a href="{% url 'twiiter:profile' tweet.author.username %}">
+                                    {{ tweet.author.username }}
+                                </a>
+                            </h5>
+                            <p class="card-text">{{ tweet.content }}</p>
+                            {% if tweet.image_url %}
+                                <img src="{{ tweet.image_url }}" class="img-fluid rounded mb-3" alt="Tweet image">
+                            {% endif %}
+                            <small class="text-muted">{{ tweet.created_at }}</small>
+                        </a>
+
+                        <div class="tweet-actions mt-3">
+                            <a href="{% url 'twiiter:tweet_detail' tweet.id %}">
+                                <i class="far fa-comment"></i> {{ tweet.comments.count }}
+                            </a>
+                            <a href="{% url 'twiiter:like_toggle' tweet.id %}" class="like-button {% if tweet.id in user_liked_tweets %}liked{% endif %}">
+                                <i class="{% if tweet.id in user_liked_tweets %}fas{% else %}far{% endif %} fa-heart"></i>
+                                <span class="like-count">{{ tweet.likes.count }}</span>
+                            </a>
+                            {% if user == tweet.author %}
+                                <a href="{% url 'twiiter:edit_tweet' tweet.id %}">
+                                    <i class="far fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'twiiter:delete_tweet' tweet.id %}" class="text-danger">
+                                    <i class="far fa-trash-alt"></i> Delete
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No tweets with this hashtag yet.</p>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Related Hashtags</h4>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for related_hashtag in related_hashtags %}
+                        <a href="{% url 'twiiter:hashtag' related_hashtag.name %}" class="list-group-item list-group-item-action">
+                            #{{ related_hashtag.name }}
+                            <span class="badge bg-primary float-end">{{ related_hashtag.tweets.count }}</span>
+                        </a>
+                    {% empty %}
+                        <p>No related hashtags found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

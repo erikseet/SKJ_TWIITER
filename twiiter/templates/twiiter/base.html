@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Twiiter{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #1DA1F2;
+        }
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .tweet-actions a {
+            color: #555;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .tweet-actions a:hover {
+            color: #1DA1F2;
+        }
+        .liked {
+            color: #E0245E !important;
+        }
+        .profile-header {
+            background-color: #1DA1F2;
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'twiiter:home' %}">
+                <img src="{% static 'twiiter/imgs/nerv.svg' %}" width="24" height="24" class="d-inline-block align-text-top me-1">
+                Twiiter
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'twiiter:home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'twiiter:for_you' %}">For You</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'twiiter:search' %}">Search</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'twiiter:profile' user.username %}">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <form method="POST" action="{% url 'twiiter:logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link btn btn-link">Logout</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'twiiter:login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'twiiter:register' %}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        $(document).ready(function() {
+            // Make tweets clickable
+            $(document).on('click', '.tweet-link', function(e) {
+                // Prevent click if the user is clicking a link inside the tweet
+                if ($(e.target).is('a') || $(e.target).closest('a').length > 0 &&
+                    !$(e.target).hasClass('tweet-link') && !$(e.target).closest('.tweet-link').length) {
+                    return; // Let the inner link handle its own click
+                }
+
+                const tweetUrl = $(this).attr('href');
+                window.location.href = tweetUrl;
+            });
+
+            // Handle like button clicks with AJAX
+            $(document).on('click', '.like-button', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent the tweet-link click from firing
+
+                const likeBtn = $(this);
+
+                $.ajax({
+                    url: $(this).attr('href'),
+                    type: 'GET',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    success: function(data) {
+                        const likeCount = likeBtn.find('.like-count');
+                        likeCount.text(data.likes_count);
+
+                        if (data.liked) {
+                            likeBtn.addClass('liked');
+                            likeBtn.find('i').removeClass('far').addClass('fas');
+                        } else {
+                            likeBtn.removeClass('liked');
+                            likeBtn.find('i').removeClass('fas').addClass('far');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>

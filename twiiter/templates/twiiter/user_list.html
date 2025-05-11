@@ -1,0 +1,35 @@
+{% extends 'twiiter/base.html' %}
+
+{% block title %}{{ title }} - Twiiter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>{{ title }}</h3>
+                <a href="{% url 'twiiter:profile' profile_user.username %}" class="btn btn-outline-primary">Back to Profile</a>
+            </div>
+            <div class="card-body">
+                {% if users %}
+                    <div class="list-group">
+                        {% for user_obj in users %}
+                            <a href="{% url 'twiiter:profile' user_obj.username %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ user_obj.profile.profile_picture }}" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                                    <div>
+                                        <h5 class="mb-1">{{ user_obj.username }}</h5>
+                                        <p class="mb-1">{{ user_obj.profile.bio|truncatechars:100 }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No users found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

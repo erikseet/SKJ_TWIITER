@@ -1,0 +1,105 @@
+{% extends 'twiiter/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Latest Tweets</h2>
+
+        {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.content }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.image_url }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Tweet</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if tweets %}
+            {% for tweet in tweets %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <a href="{% url 'twiiter:tweet_detail' tweet.id %}" class="tweet-link text-decoration-none text-dark">
+                            <h5 class="card-title">
+                                <a href="{% url 'twiiter:profile' tweet.author.username %}">
+                                    {{ tweet.author.username }}
+                                </a>
+                            </h5>
+                            <p class="card-text">{{ tweet.content }}</p>
+                            {% if tweet.image_url %}
+                                <img src="{{ tweet.image_url }}" class="img-fluid rounded mb-3" alt="Tweet image">
+                            {% endif %}
+                            <small class="text-muted">{{ tweet.created_at }}</small>
+                        </a>
+
+                        <div class="tweet-actions mt-3">
+                            <a href="{% url 'twiiter:tweet_detail' tweet.id %}">
+                                <i class="far fa-comment"></i> {{ tweet.comments.count }}
+                            </a>
+                            <a href="{% url 'twiiter:like_toggle' tweet.id %}" class="like-button {% if tweet.id in user_liked_tweets %}liked{% endif %}">
+                                <i class="{% if tweet.id in user_liked_tweets %}fas{% else %}far{% endif %} fa-heart"></i>
+                                <span class="like-count">{{ tweet.likes.count }}</span>
+                            </a>
+                            {% if user == tweet.author %}
+                                <a href="{% url 'twiiter:edit_tweet' tweet.id %}">
+                                    <i class="far fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'twiiter:delete_tweet' tweet.id %}" class="text-danger">
+                                    <i class="far fa-trash-alt"></i> Delete
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                No tweets yet. {% if user.is_authenticated %}Be the first to tweet!{% else %}Please login to start tweeting.{% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Welcome to Twiiter</h4>
+            </div>
+            <div class="card-body">
+                <p>X clone in DJANGOOOO.</p>
+                {% if not user.is_authenticated %}
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'twiiter:register' %}" class="btn btn-primary">Sign Up</a>
+                        <a href="{% url 'twiiter:login' %}" class="btn btn-outline-primary">Login</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h4>Trending Hashtags</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for hashtag in trending_hashtags %}
+                        <li class="list-group-item">
+                            <a href="{% url 'twiiter:hashtag' hashtag.name %}">
+                                #{{ hashtag.name }}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">No trending hashtags yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
