@@ -31,7 +31,7 @@ Toto je jednoduchá Twitter/X klon aplikácia vytvorená pomocou Django framewor
    python manage.py makemigrations  
    python manage.py migrate
 
-5. Vytvorte superpoužívateľa (admin):
+5. (Voliteľné) Vytvorte superpoužívateľa (admin):
 
    python manage.py createsuperuser
 
